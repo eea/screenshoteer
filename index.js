@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+/* global require, GLOBAL, __dirname, console, process, module */
 const puppeteer = require('puppeteer');
 const devices = require('puppeteer/DeviceDescriptors');
 const program = require('commander');
@@ -20,68 +20,73 @@ program
     .option('--file, [file]', 'Output file')
     .parse(process.argv);
 
-if (!program.url) {
-  console.log('Please add --url parameter.\n' +
-              'Something like this: $ screenshoteer --url http://www.example.com');
-  process.exit();
+async function screenshoteer (options) {
+    try {
+        if (options === undefined) {
+            if (!program.url) {
+              console.log('Please add --url parameter.\n' +
+                          'Something like this: $ screenshoteer --url http://www.example.com');
+              process.exit();
+            }
+
+            !program.fullpage ? program.fullPage = true : program.fullPage = JSON.parse(program.fullpage);
+
+            console.log(program.url);
+            console.log(program.fullPage);
+
+            options = program;
+        }
+        execute(options);
+    } catch(e) {
+        console.error(e);
+        process.exit(1);
+    }
+
+    async function execute(options) {
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        if (options.no) {
+          await page.setRequestInterception(true);
+          page.on('request', request => {
+              if (request.resourceType() === options.no)
+              request.abort();
+              else
+              request.continue();
+          });
+        }
+        const timestamp = new Date().getTime();
+        if (options.w || options.h) {
+            const newWidth = !options.w?600:options.w
+            const newHeight = !options.h?'0':options.h
+            if (options.h && !options.fullpage) options.fullPage = false;
+            await page.setViewport({width: Number(newWidth), height: Number(newHeight)})
+        }
+        if (options.emulate)
+            await page.emulate(devices[options.emulate]);
+        else
+            options.emulate = '';
+
+        if (options.auth) {
+          const [username, password] = options.auth.split(';');
+          await page.authenticate({ username, password });
+        }
+        await page.goto(options.url);
+        const title = (await page.title()).replace(/[/\\?%*:|"<>]/g, '-');
+        if (options.waitfor) await page.waitFor(Number(options.waitfor));
+        if (options.waitforselector) await page.waitForSelector(options.waitforselector);
+        if (options.click) await page.click(options.click);
+        const file = options.file ? options.file : `${title} ${options.emulate} ${options.el} ${timestamp}.png`;
+        if (options.el) {
+            const el = await page.$(options.el);
+            await el.screenshot({path: file});
+        } else {
+            await page.screenshot({path: file, fullPage: options.fullPage});
+        }
+        await page.emulateMedia('screen');
+        if (options.pdf) await page.pdf({path: `${title} ${options.emulate} ${timestamp}.pdf`});
+        console.log(title);
+        await browser.close();
+    }
 }
 
-!program.fullpage ? program.fullPage = true : program.fullPage = JSON.parse(program.fullpage);
-
-console.log(program.url);
-console.log(program.fullPage);
-
-(async () => {
-  try {
-    await execute();
-  } catch(e) {
-    console.error(e);
-    process.exit(1);
-  }
-
-  async function execute() {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    if (program.no) {
-      await page.setRequestInterception(true);
-      page.on('request', request => {
-        if (request.resourceType() === program.no)
-          request.abort();
-          else
-        request.continue();
-      });
-    }
-    const timestamp = new Date().getTime();
-    if (program.w || program.h) {
-      const newWidth = !program.w?600:program.w
-      const newHeight = !program.h?'0':program.h
-      if (program.h && !program.fullpage) program.fullPage = false;
-      await page.setViewport({width: Number(newWidth), height: Number(newHeight)})
-    }
-    if (program.emulate)
-      await page.emulate(devices[program.emulate]);
-    else
-      program.emulate = '';
-
-    if (program.auth) {
-      const [username, password] = program.auth.split(';');
-      await page.authenticate({ username, password });
-    }
-    await page.goto(program.url);
-    const title = (await page.title()).replace(/[/\\?%*:|"<>]/g, '-');
-    if (program.waitfor) await page.waitFor(Number(program.waitfor));
-    if (program.waitforselector) await page.waitForSelector(program.waitforselector);
-    if (program.click) await page.click(program.click);
-    const file = program.file ? program.file : `${title} ${program.emulate} ${program.el} ${timestamp}.png`;
-    if (program.el) {
-      const el = await page.$(program.el);
-      await el.screenshot({path: file});
-    } else {
-      await page.screenshot({path: file, fullPage: program.fullPage});
-    }
-    await page.emulateMedia('screen');
-    if (program.pdf) await page.pdf({path: `${title} ${program.emulate} ${timestamp}.pdf`});
-    console.log(title);
-    await browser.close();
-  }
-})()
+module.exports = screenshoteer;
