@@ -36,7 +36,7 @@ async function screenshoteer (options) {
 
             options = program;
         }
-        execute(options);
+        await execute(options);
     } catch(e) {
         console.error(e);
         process.exit(1);
@@ -80,7 +80,13 @@ async function screenshoteer (options) {
             const el = await page.$(options.el);
             await el.screenshot({path: file});
         } else {
-            await page.screenshot({path: file, fullPage: options.fullPage});
+            try {
+                await page.screenshot({path: file, fullPage: options.fullPage});
+            }
+            catch(err){
+                debugger;
+                console.log(err);
+            }
         }
         await page.emulateMedia('screen');
         if (options.pdf) await page.pdf({path: `${title} ${options.emulate} ${timestamp}.pdf`});
