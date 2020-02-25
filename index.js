@@ -39,7 +39,12 @@ async function screenshoteer (options) {
         await execute(options);
     } catch(e) {
         console.error(e);
-        process.exit(1);
+        if (options === undefined) {
+            process.exit(1);
+        }
+        else {
+            throw(e);
+        }
     }
 
     async function execute(options) {
@@ -84,7 +89,6 @@ async function screenshoteer (options) {
                 await page.screenshot({path: file, fullPage: options.fullPage});
             }
             catch(err){
-                debugger;
                 console.log(err);
             }
         }
