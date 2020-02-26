@@ -48,7 +48,7 @@ async function screenshoteer (options) {
     }
 
     async function execute(options) {
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({headless: true});
         const page = await browser.newPage();
         if (options.no) {
           await page.setRequestInterception(true);
@@ -75,7 +75,7 @@ async function screenshoteer (options) {
           const [username, password] = options.auth.split(';');
           await page.authenticate({ username, password });
         }
-        await page.goto(options.url);
+        await page.goto(options.url, {waitUntil: 'networkidle2'});
         const title = (await page.title()).replace(/[/\\?%*:|"<>]/g, '-');
         if (options.waitfor) await page.waitFor(Number(options.waitfor));
         if (options.waitforselector) await page.waitForSelector(options.waitforselector);
@@ -86,14 +86,18 @@ async function screenshoteer (options) {
             await el.screenshot({path: file});
         } else {
             try {
-                await page.screenshot({path: file, fullPage: options.fullPage});
+                if (options.pdf) {
+                    // await page.emulateMedia('screen');
+                    await page.pdf({path: file, format: 'A4'});
+                }
+                else {
+                    await page.screenshot({path: file, fullPage: options.fullPage});
+                }
             }
             catch(err){
                 console.log(err);
             }
         }
-        await page.emulateMedia('screen');
-        if (options.pdf) await page.pdf({path: `${title} ${options.emulate} ${timestamp}.pdf`});
         console.log(title);
         await browser.close();
     }
