@@ -48,7 +48,7 @@ async function screenshoteer (options) {
     }
 
     async function execute(options) {
-        const browser = await puppeteer.launch({headless: true});
+        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox']});
         const page = await browser.newPage();
         if (options.no) {
           await page.setRequestInterception(true);
