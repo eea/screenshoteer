@@ -96,6 +96,7 @@ async function screenshoteer (options) {
             }
             catch(err){
                 console.log(err);
+                throw(err);
             }
         }
         console.log(title);
