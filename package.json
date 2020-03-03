@@ -12,7 +12,7 @@
   "dependencies": {
     "commander": "^2.19.0",
     "package.json": "^2.0.1",
-    "puppeteer": "1.12.2"
+    "puppeteer": "2.0.0"
   },
   "keywords": [
     "screenshots",
