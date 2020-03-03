@@ -49,6 +49,7 @@ async function screenshoteer (options) {
 
     async function execute(options) {
         const browser = await puppeteer.launch({headless: true});
+        // const browser = await puppeteer.launch({headless: true, slowMo: 250, args: ['--disable-web-security', '--disable-dev-shm-usage']});
         const page = await browser.newPage();
         if (options.no) {
           await page.setRequestInterception(true);
@@ -59,6 +60,12 @@ async function screenshoteer (options) {
               request.continue();
           });
         }
+
+        page.on('dialog', async dialog => {
+            console.log(dialog.message());
+            await dialog.dismiss();
+    	});
+
         const timestamp = new Date().getTime();
         if (options.w || options.h) {
             const newWidth = !options.w?600:options.w
@@ -87,8 +94,9 @@ async function screenshoteer (options) {
         } else {
             try {
                 if (options.pdf) {
-                    // await page.emulateMedia('screen');
-                    await page.pdf({path: file, format: 'A4'});
+                    // await page.emulateMedia('print');
+                    await page.emulateMedia('screen');
+                    await page.pdf({path: file, format: 'A4', printBackground: true});
                 }
                 else {
                     await page.screenshot({path: file, fullPage: options.fullPage});
