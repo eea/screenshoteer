@@ -48,7 +48,7 @@ async function screenshoteer (options) {
     }
 
     async function execute(options) {
-        const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox']});
+        const browser = await puppeteer.launch({headless: true});
         // const browser = await puppeteer.launch({headless: true, slowMo: 250, args: ['--disable-web-security', '--disable-dev-shm-usage']});
         const page = await browser.newPage();
         if (options.no) {

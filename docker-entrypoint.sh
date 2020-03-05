@@ -8,4 +8,5 @@ chmod 4755 chrome_sandbox
 # copy sandbox executable to a shared location
 cp -p chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
 # export CHROME_DEVEL_SANDBOX env variable
-export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
+export CHROME_DEVEL_SANDBOX="/usr/local/sbin/chrome-devel-sandbox"
+echo "EXPORTED"
