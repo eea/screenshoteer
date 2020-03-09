@@ -3,6 +3,7 @@
 const puppeteer = require('puppeteer');
 const devices = require('puppeteer/DeviceDescriptors');
 const program = require('commander');
+const treekill = require('tree-kill');
 
 program
     .option('--url, [url]', 'The url')
@@ -108,7 +109,9 @@ async function screenshoteer (options) {
             }
         }
         console.log(title);
-        await browser.close();
+        treekill(browser.process().pid, 'SIGKILL');
+        // await browser.close();
+        // await browser.disconnect();
     }
 }
 
