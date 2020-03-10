@@ -111,8 +111,6 @@ async function screenshoteer (page, options) {
         console.log(title);
         await page.close();
         global.cluster.idle();
-        // debugger;
-
         // treekill(browser.process().pid, 'SIGKILL');
         // await browser.close();
         // await browser.disconnect();
