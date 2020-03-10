@@ -21,7 +21,7 @@ program
     .option('--file, [file]', 'Output file')
     .parse(process.argv);
 
-async function screenshoteer (options) {
+async function screenshoteer (page, options) {
     try {
         if (options === undefined) {
             if (!program.url) {
@@ -37,7 +37,7 @@ async function screenshoteer (options) {
 
             options = program;
         }
-        await execute(options);
+        await execute(page, options);
     } catch(e) {
         console.error(e);
         if (options === undefined) {
@@ -48,10 +48,10 @@ async function screenshoteer (options) {
         }
     }
 
-    async function execute(options) {
-        const browser = await puppeteer.launch({headless: true});
+    async function execute(page, options) {
+        // const browser = await puppeteer.launch({headless: true});
         // const browser = await puppeteer.launch({headless: true, slowMo: 250, args: ['--disable-web-security', '--disable-dev-shm-usage']});
-        const page = await browser.newPage();
+        // const page = await browser.newPage();
         if (options.no) {
           await page.setRequestInterception(true);
           page.on('request', request => {
@@ -109,7 +109,11 @@ async function screenshoteer (options) {
             }
         }
         console.log(title);
-        treekill(browser.process().pid, 'SIGKILL');
+        await page.close();
+        global.cluster.idle();
+        // debugger;
+
+        // treekill(browser.process().pid, 'SIGKILL');
         // await browser.close();
         // await browser.disconnect();
     }
