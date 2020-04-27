@@ -83,7 +83,10 @@ async function screenshoteer (page, options) {
           const [username, password] = options.auth.split(';');
           await page.authenticate({ username, password });
         }
-        await page.goto(options.url, {waitUntil: 'networkidle2'});
+        // set timeout to 60s
+        var def_timeout = 60000;
+        page.setDefaultNavigationTimeout(def_timeout)
+        await page.goto(options.url, {waitUntil: 'networkidle2', timeout: def_timeout});
         const title = (await page.title()).replace(/[/\\?%*:|"<>]/g, '-');
         if (options.waitfor) await page.waitFor(Number(options.waitfor));
         if (options.waitforselector) await page.waitForSelector(options.waitforselector);
